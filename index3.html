@@ -1,76 +1,34 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-  <!-- 样式保持不变 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coze 智能体</title>
 </head>
 <body>
-  <div class="container">
-    <h1>🐶 表情包生成器</h1>
-    <input type="text" id="keyword" placeholder="输入描述词，例如：吃西瓜的猫">
-    <button onclick="generate()">立即生成</button>
-    <div id="result"></div>
-  </div>
+    <h1>输入关键词生成图片</h1>
+    <input type="text" id="keyword" placeholder="输入关键词">
+    <button onclick="generateImage()">生成图片</button>
+    <br><br>
+    <img id="generated-image" src="" alt="生成的图片" style="max-width: 100%;">
 
-  <script>
-    // 替换为你的真实 Bot 专用令牌（sk-开头）
-    const API_TOKEN = 'pat_hmnLW6h1fzs0vPtdNt97v70aTQGyePM5Ptnm5LRU4yAHifVZrLMQj6fkpdDtutH7'; 
+    <script>
+        async function generateImage() {
+            const keyword = document.getElementById('keyword').value;
+            const response = await fetch('https://api.coze.cn/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer <pat_hmnLW6h1fzs0vPtdNt97v70aTQGyePM5Ptnm5LRU4yAHifVZrLMQj6fkpdDtutH7>'
+                },
+                body: JSON.stringify({ keyword: keyword })
+            });
 
-    async function generate() {
-      const keyword = document.getElementById('keyword').value;
-      const resultDiv = document.getElementById('result');
-      
-      if (!keyword) {
-        alert('请输入描述词');
-        return;
-      }
-
-      resultDiv.innerHTML = '<div class="loading"></div> 生成中，请稍候...';
-
-      try {
-        const response = await fetch(
-          'https://api.coze.cn/v3/chat', // 固定端点
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${API_TOKEN}`
-            },
-            body: JSON.stringify({
-              bot_id: "7479345976894439465",
-              message: keyword,
-              stream: false
-            })
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP 错误: ${response.status}`);
+            const data = await response.json();
+            const imageUrl = data.imageUrl; // 假设API返回一个imageUrl字段
+            document.getElementById('generated-image').src = imageUrl;
         }
-
-        const data = await response.json();
-        // 根据实际响应结构调整提取逻辑
-        const imageUrl = data.choices[0].message.content.image_url;
-        
-        resultDiv.innerHTML = `
-          <h3>生成结果：</h3>
-          <img id="image" src="${imageUrl}" style="max-width: 240px">
-          <div style="margin-top: 15px;">
-            <button onclick="download('${imageUrl}')">💾 保存图片</button>
-          </div>
-        `;
-      } catch (error) {
-        resultDiv.innerHTML = `❌ 错误: ${error.message}`;
-      }
-    }
-
-    function download(url) {
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `meme-${Date.now()}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  </script>
+    </script>
 </body>
 </html>
+
